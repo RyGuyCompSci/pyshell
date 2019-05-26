@@ -46,7 +46,6 @@ and handles user input
 def main():
 	
 	global working_directory	
-	
 	while(True):
 		try:
 			command = input("PyShell::%s$ " % (working_directory.replace(os.getenv("HOME"), "~")))
@@ -139,7 +138,8 @@ def change_directory(args):
 	
 	else:
 		try:
-			os.chdir(args[1])
+			home_text = os.getenv("HOME") + "/"
+			os.chdir(args[1].replace("~", home_text))
 		except FileNotFoundError as err:
 			print(err)
 	
