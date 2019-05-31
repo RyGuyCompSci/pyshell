@@ -1,7 +1,8 @@
 import os
 import sys
 import stat
-import subprocess
+import readline
+
 
 # Global text variables
 ascii_art = """
@@ -39,14 +40,41 @@ Functions that I hope to support include:
 
 working_directory = str(os.getcwd())
 
+
+# Class to aid with autocompletion
+# stackoverflow.com/questions/7821661/
+class MyCompleter(object):
+	def __init__(self, options):
+		self.options = sorted(options)
+
+	def complete(self, text, state):
+		if state == 0:
+			if text:
+				self.matches = [s for s in self.options if s and s.startswith(text)]
+			else:
+				self.matches = self.options[:]
+
+		try:
+			return self.matches[state]
+		except IndexError: # no valid matches
+			return None
+
 """
 Main method handles basic bash loop
 and handles user input
 """
 def main():
-	
+
 	global working_directory	
+
 	while(True):
+		
+		# Establish autocomplete for current directory
+		# TODO: add autocomplete for sub- and parent directories
+		completer = MyCompleter(os.listdir())
+		readline.set_completer(completer.complete)
+		readline.parse_and_bind('tab: complete')
+
 		try:
 			command = input("PyShell::%s$ " % (working_directory.replace(os.getenv("HOME"), "~")))
 		except EOFError:
@@ -135,16 +163,18 @@ def change_directory(args):
 	
 	if len(args) == 1 or args[1] == "~":
 		os.chdir(os.getenv("HOME"))
-	
 	else:
 		try:
 			home_text = os.getenv("HOME") + "/"
-			os.chdir(args[1].replace("~", home_text))
-		except FileNotFoundError as err:
-			print(err)
+			new_dir_text = args[1].replace("~", home_text)
+			os.chdir(new_dir_text)
+		except NotADirectoryError:
+			print("Error: '%s' is not a directory" %(new_dir_text))
+		except FileNotFoundError:
+			print("Directory '%s' not found" % (new_dir_text.split()[-1]))
 	
-	check_dir = str(os.getcwd())
-	if check_dir != working_directory:
+	# update current directory for input line
+	if str(os.getcwd()) != working_directory:
 		working_directory = check_dir
 
 """
