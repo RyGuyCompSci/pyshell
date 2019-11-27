@@ -174,8 +174,7 @@ def change_directory(args):
 			print("Directory '%s' not found" % (new_dir_text.split()[-1]))
 	
 	# update current directory for input line
-	if str(os.getcwd()) != working_directory:
-		working_directory = check_dir
+	working_directory =	os.getcwd() 
 
 """
 Return basic info about the shell
